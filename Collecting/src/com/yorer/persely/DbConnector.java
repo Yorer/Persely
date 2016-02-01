@@ -2,6 +2,7 @@ package com.yorer.persely;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -40,7 +41,6 @@ public class DbConnector {
 					"`paid` INTEGER DEFAULT '0' NOT NULL);";
 			
 			statement.executeUpdate(sql);
-			
 		} catch (SQLException e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			JOptionPane.showMessageDialog(null, "Database create table error: " + e.getMessage());
@@ -66,7 +66,9 @@ public class DbConnector {
 			String sql = "UPDATE Persely set `alap_osszeg` = " + item.getAlapOsszeg();
 			statement.executeUpdate(sql);
 			sql = "UPDATE Persely set `nov_rata` = " + item.getNovRata();
-			statement.executeUpdate(sql);			
+			statement.executeUpdate(sql);
+			sql = "UPDATE Persely set `arfolyam` = '" + item.getArfolyam() + "'";
+			statement.executeUpdate(sql);
 		} catch (SQLException e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			JOptionPane.showMessageDialog(null, "Database update error: " + e.getMessage());
@@ -121,6 +123,20 @@ public class DbConnector {
 		} catch (SQLException e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
 			JOptionPane.showMessageDialog(null, "Database close error: " + e.getMessage());
+		}
+	}
+	
+	public void getDatabaseValues(PerselyAdatok adatok){
+		String sql = "select * from Persely;";
+		try {
+			ResultSet rs = statement.executeQuery(sql);
+			while (rs.next()) {
+				adatok.setAlapOsszeg(rs.getInt("alap_osszeg"));
+				adatok.setNovRata(rs.getInt("nov_rata"));
+				adatok.setArfolyam(rs.getString("arfolyam"));
+			}
+		} catch (SQLException e) {
+			JOptionPane.showMessageDialog(null, "Database get data error: " + e.getMessage());
 		}
 	}
 }

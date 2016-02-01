@@ -10,10 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
-import java.net.URL;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -29,7 +27,7 @@ public class PreferencesDialog extends JDialog {
 	
 	private static final long serialVersionUID = 1L;
 
-	public PreferencesDialog() {
+	public PreferencesDialog(PerselyAdatok adatok) {
 		JSpinner spNovRata;
 		JSpinner spAlapOsszeg;
 		JComboBox<String> jComboBox;
@@ -58,6 +56,7 @@ public class PreferencesDialog extends JDialog {
 		spNovRata = new JSpinner(spinnerModelNovRata);
 		spNovRata.setToolTipText("Növekedési ráta");
 		spNovRata.setBounds(193, 36, 70, 20);
+		spNovRata.setValue(adatok.getNovRata());
 		JTextField tf3 = ((JSpinner.DefaultEditor) spNovRata.getEditor()).getTextField();
 		tf3.addFocusListener(focus());
 		contentPanel.add(spNovRata);
@@ -66,6 +65,7 @@ public class PreferencesDialog extends JDialog {
 		spAlapOsszeg = new JSpinner(spinnerModelAlapOsszeg);
 		spAlapOsszeg.setToolTipText("Alapösszeg");
 		spAlapOsszeg.setBounds(193, 11, 70, 20);
+		spAlapOsszeg.setValue(adatok.getAlapOsszeg());
 		JTextField tf4 = ((JSpinner.DefaultEditor) spAlapOsszeg.getEditor()).getTextField();
 		tf4.addFocusListener(focus());
 		contentPanel.add(spAlapOsszeg);
@@ -78,6 +78,9 @@ public class PreferencesDialog extends JDialog {
 		String[] items = {v.getFONT(), v.getEURO(), v.getFORINT()};
 		jComboBox = new JComboBox(items);
 		jComboBox.setBounds(193, 64, 70, 20);
+		if(adatok.getArfolyam() != null && !adatok.getArfolyam().isEmpty()){
+			jComboBox.setSelectedItem(adatok.getArfolyam());			
+		}
 		contentPanel.add(jComboBox);
 		
 		JSeparator separator = new JSeparator();
@@ -92,7 +95,11 @@ public class PreferencesDialog extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent event) {
 						DbConnector dbc = new DbConnector();
-						PerselyAdatok adatok = new PerselyAdatok();
+						
+						adatok.setAlapOsszeg(Integer.parseInt(spAlapOsszeg.getValue().toString()));
+						adatok.setNovRata(Integer.parseInt(spNovRata.getValue().toString()));
+						adatok.setArfolyam((String) jComboBox.getSelectedItem());
+						
 						boolean opened = false;
 						
 						boolean fileExists = new File("resources/persely.db").exists();
@@ -106,11 +113,9 @@ public class PreferencesDialog extends JDialog {
 						if(!opened){
 							dbc.open();
 						}
-						adatok.setAlapOsszeg(Integer.parseInt(spAlapOsszeg.getValue().toString()));
-						adatok.setNovRata(Integer.parseInt(spNovRata.getValue().toString()));
-						adatok.setArfolyam((String)jComboBox.getSelectedItem());
 						
 						dbc.updateDB(adatok);
+						dbc.getDatabaseValues(adatok);
 						
 						dbc.close();
 						dispose();

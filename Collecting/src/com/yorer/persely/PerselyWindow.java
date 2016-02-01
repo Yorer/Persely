@@ -7,7 +7,6 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -32,6 +31,7 @@ public class PerselyWindow extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	private JLabel lblBefizetve;
+	JLabel lblFont;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -49,8 +49,15 @@ public class PerselyWindow extends JFrame {
 	}
 
 	public PerselyWindow() {
+		PerselyAdatok adatok = new PerselyAdatok();
+		PerselyMain main = new PerselyMain();
 		JPanel contentPanel;
 		JTextArea log;
+		DbConnector dbc = new DbConnector();
+		dbc.open();
+		dbc.getDatabaseValues(adatok);
+		dbc.close();
+		
 		URL urlToImage = this.getClass().getResource("/icon.png");
 		if (urlToImage != null) {
 			setIconImage(Toolkit.getDefaultToolkit().getImage(urlToImage));
@@ -79,9 +86,12 @@ public class PerselyWindow extends JFrame {
 		menuPreferences.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				try {
-					new PreferencesDialog();
+					new PreferencesDialog(adatok);
 				} catch (Exception e) {
 					e.printStackTrace();
+				} finally {
+					lblFont.doLayout();
+					doLayout();
 				}
 			}
 		});
@@ -136,7 +146,9 @@ public class PerselyWindow extends JFrame {
 		lbPerselyben.setBounds(10, 11, 161, 14);
 		contentPanel.add(lbPerselyben);
 
-		JLabel lblFont = new JLabel("₤50");
+		lblFont = new JLabel();
+		lblFont.setText(new Integer(adatok.getAlapOsszeg()).toString());
+		lblFont.repaint();
 		lblFont.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblFont.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblFont.setBounds(195, 11, 78, 14);
@@ -146,12 +158,13 @@ public class PerselyWindow extends JFrame {
 		lblHtenFizetett.setBounds(10, 36, 161, 14);
 		contentPanel.add(lblHtenFizetett);
 
-		JLabel label = new JLabel("₤10");
-		label.setForeground(Color.RED);
-		label.setHorizontalAlignment(SwingConstants.RIGHT);
-		label.setFont(new Font("Tahoma", Font.BOLD, 11));
-		label.setBounds(195, 36, 78, 14);
-		contentPanel.add(label);
+		JLabel lblHetenFizetendo = new JLabel("₤10");
+		lblHetenFizetendo.setText(new Integer(main.hetenFizetendo(adatok, 3)).toString()); //FIXME NINCS KÉSZ! Van benne konstans!
+		lblHetenFizetendo.setForeground(Color.RED);
+		lblHetenFizetendo.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblHetenFizetendo.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblHetenFizetendo.setBounds(195, 36, 78, 14);
+		contentPanel.add(lblHetenFizetendo);
 
 		JLabel lblKvetkezsszeg = new JLabel("Következő összeg:");
 		lblKvetkezsszeg.setBounds(10, 61, 161, 14);
@@ -165,17 +178,18 @@ public class PerselyWindow extends JFrame {
 		lblHtralvsszeg.setBounds(10, 86, 161, 14);
 		contentPanel.add(lblHtralvsszeg);
 
-		JLabel label_1 = new JLabel("₤12");
-		label_1.setHorizontalAlignment(SwingConstants.RIGHT);
-		label_1.setFont(new Font("Tahoma", Font.BOLD, 11));
-		label_1.setBounds(195, 61, 78, 14);
-		contentPanel.add(label_1);
+		JLabel lblKoviHet = new JLabel("₤12");
+		lblKoviHet.setText(new Integer(main.koviHet(adatok, 3)).toString());
+		lblKoviHet.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblKoviHet.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblKoviHet.setBounds(195, 61, 78, 14);
+		contentPanel.add(lblKoviHet);
 
-		JLabel label_2 = new JLabel("₤2304");
-		label_2.setHorizontalAlignment(SwingConstants.RIGHT);
-		label_2.setFont(new Font("Tahoma", Font.BOLD, 11));
-		label_2.setBounds(195, 86, 78, 14);
-		contentPanel.add(label_2);
+		JLabel lblHatralevoOsszeg = new JLabel("₤2304");
+		lblHatralevoOsszeg.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblHatralevoOsszeg.setFont(new Font("Tahoma", Font.BOLD, 11));
+		lblHatralevoOsszeg.setBounds(195, 86, 78, 14);
+		contentPanel.add(lblHatralevoOsszeg);
 
 		JSeparator separator_1 = new JSeparator();
 		separator_1.setBounds(10, 136, 263, 2);
