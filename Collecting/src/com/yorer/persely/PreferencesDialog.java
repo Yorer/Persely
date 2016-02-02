@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
+import java.text.ParseException;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -103,18 +104,13 @@ public class PreferencesDialog extends JDialog {
 						
 						boolean opened = false;
 						boolean fileExists = new File("resources/persely.db").exists();
-						if(!fileExists){
-							new File("resources").mkdirs();
-							
-							opened = dbc.open();
-							dbc.createTable();
-							dbc.addToDB(adatok);
-						}
-						if(!opened){
-							dbc.open();
-						}
+						frame.createTableIfNotExists(fileExists, opened, dbc, adatok, false);
 						dbc.updateDB(adatok);
-						dbc.getDatabaseValues(adatok);
+						try {
+							dbc.getDatabaseValues(adatok);
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
 						dbc.close();
 						dispose();
 					}

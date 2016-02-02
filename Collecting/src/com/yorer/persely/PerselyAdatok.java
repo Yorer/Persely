@@ -1,11 +1,16 @@
 package com.yorer.persely;
 
+import java.util.Date;
+
 public class PerselyAdatok {
 	
 	private int id;
 	private int alapOsszeg;
 	private int novRata;
 	private String arfolyam;
+	private Date jelenlegiDatum;
+	private Date evKezdete;
+	private Date evVege;
 	
 	public int getId() {
 		return id;
@@ -30,5 +35,23 @@ public class PerselyAdatok {
 	}
 	public void setArfolyam(String arfolyam) {
 		this.arfolyam = arfolyam;
+	}
+	public Date getJelenlegiDatum() {
+		return jelenlegiDatum;
+	}
+	public void setJelenlegiDatum(Date jelenlegiDatum) {
+		this.jelenlegiDatum = jelenlegiDatum;
+	}
+	public Date getEvKezdete() {
+		return evKezdete;
+	}
+	public void setEvKezdete(Date evKezdete) {
+		this.evKezdete = evKezdete;
+	}
+	public Date getEvVege() {
+		return evVege;
+	}
+	public void setEvVege(Date evVege) {
+		this.evVege = evVege;
 	}
 }
