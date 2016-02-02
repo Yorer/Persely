@@ -101,14 +101,18 @@ public class PreferencesDialog extends JDialog {
 						adatok.setNovRata(Integer.parseInt(spNovRata.getValue().toString()));
 						adatok.setArfolyam((String) jComboBox.getSelectedItem());
 						
-						dbc.open();
+						boolean opened = false;
 						boolean fileExists = new File("resources/persely.db").exists();
 						if(!fileExists){
 							new File("resources").mkdirs();
+							
+							opened = dbc.open();
 							dbc.createTable();
 							dbc.addToDB(adatok);
 						}
-
+						if(!opened){
+							dbc.open();
+						}
 						dbc.updateDB(adatok);
 						dbc.getDatabaseValues(adatok);
 						dbc.close();

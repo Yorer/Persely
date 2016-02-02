@@ -60,12 +60,17 @@ public class PerselyWindow extends JFrame {
 		JPanel contentPanel = new JPanel();
 		JTextArea log;
 		DbConnector dbc = new DbConnector();
+		boolean opened = false;
 		boolean fileExists = new File("resources/persely.db").exists();
-		dbc.open();
 		if(!fileExists){
+			new File("resources").mkdirs();
+			opened = dbc.open();
 			dbc.createTable();
 			defaultValueSet(adatok);
 			dbc.addToDB(adatok);
+		}
+		if(!opened){
+			dbc.open();
 		}
 		dbc.getDatabaseValues(adatok);
 		dbc.close();			
