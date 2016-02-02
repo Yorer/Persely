@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -25,13 +26,18 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 public class PerselyWindow extends JFrame {
 
 	private static final long serialVersionUID = 1L;
+	
 	private JLabel lblBefizetve;
-	JLabel lblFont;
+	private JLabel lblFont;
+	private JLabel lblHetenFizetendo;
+	private JLabel lblKoviHet;
+	private JLabel lblHatralevoOsszeg;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -51,12 +57,18 @@ public class PerselyWindow extends JFrame {
 	public PerselyWindow() {
 		PerselyAdatok adatok = new PerselyAdatok();
 		PerselyMain main = new PerselyMain();
-		JPanel contentPanel;
+		JPanel contentPanel = new JPanel();
 		JTextArea log;
 		DbConnector dbc = new DbConnector();
+		boolean fileExists = new File("resources/persely.db").exists();
 		dbc.open();
+		if(!fileExists){
+			dbc.createTable();
+			defaultValueSet(adatok);
+			dbc.addToDB(adatok);
+		}
 		dbc.getDatabaseValues(adatok);
-		dbc.close();
+		dbc.close();			
 		
 		URL urlToImage = this.getClass().getResource("/icon.png");
 		if (urlToImage != null) {
@@ -86,12 +98,14 @@ public class PerselyWindow extends JFrame {
 		menuPreferences.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				try {
-					new PreferencesDialog(adatok);
+					new PreferencesDialog(adatok, PerselyWindow.this);
 				} catch (Exception e) {
 					e.printStackTrace();
 				} finally {
-					lblFont.doLayout();
-					doLayout();
+					setAlapOsszeg(adatok, main, lblFont);
+					setHetenFizetendo(adatok, main, lblHetenFizetendo);
+					setKovihet(adatok, main, lblKoviHet);
+					setHatralevoOsszeg(adatok, main, lblHatralevoOsszeg);
 				}
 			}
 		});
@@ -107,7 +121,6 @@ public class PerselyWindow extends JFrame {
 		JSeparator separator = new JSeparator();
 		mnNewMenu.add(separator);
 		mnNewMenu.add(mntmKilps);
-		contentPanel = new JPanel();
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPanel);
 
@@ -147,23 +160,22 @@ public class PerselyWindow extends JFrame {
 		contentPanel.add(lbPerselyben);
 
 		lblFont = new JLabel();
-		lblFont.setText(new Integer(adatok.getAlapOsszeg()).toString());
-		lblFont.repaint();
+		setAlapOsszeg(adatok, main, lblFont);
 		lblFont.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblFont.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblFont.setBounds(195, 11, 78, 14);
+		lblFont.setBounds(181, 11, 92, 14);
 		contentPanel.add(lblFont);
 
 		JLabel lblHtenFizetett = new JLabel("Héten fizetendő:");
 		lblHtenFizetett.setBounds(10, 36, 161, 14);
 		contentPanel.add(lblHtenFizetett);
 
-		JLabel lblHetenFizetendo = new JLabel("₤10");
-		lblHetenFizetendo.setText(new Integer(main.hetenFizetendo(adatok, 3)).toString()); //FIXME NINCS KÉSZ! Van benne konstans!
+		lblHetenFizetendo = new JLabel();
+		setHetenFizetendo(adatok, main, lblHetenFizetendo);
 		lblHetenFizetendo.setForeground(Color.RED);
 		lblHetenFizetendo.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblHetenFizetendo.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblHetenFizetendo.setBounds(195, 36, 78, 14);
+		lblHetenFizetendo.setBounds(181, 36, 92, 14);
 		contentPanel.add(lblHetenFizetendo);
 
 		JLabel lblKvetkezsszeg = new JLabel("Következő összeg:");
@@ -178,17 +190,18 @@ public class PerselyWindow extends JFrame {
 		lblHtralvsszeg.setBounds(10, 86, 161, 14);
 		contentPanel.add(lblHtralvsszeg);
 
-		JLabel lblKoviHet = new JLabel("₤12");
-		lblKoviHet.setText(new Integer(main.koviHet(adatok, 3)).toString());
+		lblKoviHet = new JLabel();
+		setKovihet(adatok, main, lblKoviHet);
 		lblKoviHet.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblKoviHet.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblKoviHet.setBounds(195, 61, 78, 14);
+		lblKoviHet.setBounds(181, 61, 92, 14);
 		contentPanel.add(lblKoviHet);
 
-		JLabel lblHatralevoOsszeg = new JLabel("₤2304");
+		lblHatralevoOsszeg = new JLabel();
+		setHatralevoOsszeg(adatok, main, lblHatralevoOsszeg);
 		lblHatralevoOsszeg.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblHatralevoOsszeg.setFont(new Font("Tahoma", Font.BOLD, 11));
-		lblHatralevoOsszeg.setBounds(195, 86, 78, 14);
+		lblHatralevoOsszeg.setBounds(181, 86, 92, 14);
 		contentPanel.add(lblHatralevoOsszeg);
 
 		JSeparator separator_1 = new JSeparator();
@@ -212,6 +225,13 @@ public class PerselyWindow extends JFrame {
 		setLocation(x, y);
 	}
 
+	private void defaultValueSet(PerselyAdatok adatok) {
+		adatok.setAlapOsszeg(0);
+		adatok.setNovRata(1);
+		adatok.setArfolyam("Font");
+		
+	}
+
 	public JLabel getLblBefizetve() {
 		return lblBefizetve;
 	}
@@ -231,5 +251,40 @@ public class PerselyWindow extends JFrame {
 
 	private static ServerSocket extracted(final int PORT) throws IOException, UnknownHostException {
 		return new ServerSocket(PORT, 0, InetAddress.getByAddress(new byte[] { 127, 0, 0, 1 }));
+	}
+	
+	private void setAlapOsszeg(PerselyAdatok adatok, PerselyMain main, JLabel label){
+		if(adatok.getArfolyam() == null){
+			adatok.setArfolyam("Font");
+		}
+		if(!adatok.getArfolyam().equals("Forint")){
+			label.setText(main.arfolyam(adatok.getArfolyam()) + new Integer(adatok.getAlapOsszeg()).toString());
+		} else {
+			label.setText(new Integer(adatok.getAlapOsszeg()).toString() + " " + main.arfolyam(adatok.getArfolyam()));
+		}
+	}
+	
+	private void setHetenFizetendo(PerselyAdatok adatok, PerselyMain main, JLabel label){
+		if(!adatok.getArfolyam().equals("Forint")){
+			label.setText(main.arfolyam(adatok.getArfolyam()) + new Integer(main.hetenFizetendo(adatok, 3)).toString()); //FIXME NINCS KÉSZ! Van benne konstans!			
+		} else {
+			label.setText(new Integer(main.hetenFizetendo(adatok, 3)).toString() + " " + main.arfolyam(adatok.getArfolyam()));
+		}
+	}
+	
+	private void setKovihet(PerselyAdatok adatok, PerselyMain main, JLabel label){
+		if(!adatok.getArfolyam().equals("Forint")){
+			label.setText(main.arfolyam(adatok.getArfolyam()) + new Integer(main.koviHet(adatok, 3)).toString()); //FIXME NINCS KÉSZ! Van benne konstans!			
+		} else {
+			label.setText(new Integer(main.koviHet(adatok, 3)).toString() + " " + main.arfolyam(adatok.getArfolyam()));
+		}
+	}
+	
+	private void setHatralevoOsszeg(PerselyAdatok adatok, PerselyMain main, JLabel label){
+		if(!adatok.getArfolyam().equals("Forint")){
+			label.setText(main.arfolyam(adatok.getArfolyam()) + new Integer(main.hatraVan(adatok)).toString());			
+		} else {
+			label.setText(new Integer(main.hatraVan(adatok)).toString() + " " + main.arfolyam(adatok.getArfolyam()));
+		}
 	}
 }

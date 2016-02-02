@@ -26,8 +26,9 @@ public class PerselyMain {
 		return hetenFizetendo(adatok, hanyadikHet) + adatok.getNovRata();
 	}
 	
-	public int hatraVan(){
-		return 0; //FIXME innen folytatni
+	public int hatraVan(PerselyAdatok adatok){
+		
+		return ciklusosSzamolas(adatok); 
 	}
 	
 	public String arfolyam(String tipus) {

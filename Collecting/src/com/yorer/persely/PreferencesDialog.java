@@ -14,6 +14,7 @@ import java.io.File;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
@@ -27,7 +28,7 @@ public class PreferencesDialog extends JDialog {
 	
 	private static final long serialVersionUID = 1L;
 
-	public PreferencesDialog(PerselyAdatok adatok) {
+	public PreferencesDialog(PerselyAdatok adatok, PerselyWindow frame) {
 		JSpinner spNovRata;
 		JSpinner spAlapOsszeg;
 		JComboBox<String> jComboBox;
@@ -52,7 +53,7 @@ public class PreferencesDialog extends JDialog {
 		label_1.setBounds(6, 39, 177, 14);
 		contentPanel.add(label_1);
 
-		SpinnerNumberModel spinnerModelNovRata = new SpinnerNumberModel(1, 1, null, 1);
+		SpinnerNumberModel spinnerModelNovRata = new SpinnerNumberModel(1, 1, 1000000, 1);
 		spNovRata = new JSpinner(spinnerModelNovRata);
 		spNovRata.setToolTipText("Növekedési ráta");
 		spNovRata.setBounds(193, 36, 70, 20);
@@ -61,7 +62,7 @@ public class PreferencesDialog extends JDialog {
 		tf3.addFocusListener(focus());
 		contentPanel.add(spNovRata);
 
-		SpinnerNumberModel spinnerModelAlapOsszeg = new SpinnerNumberModel(0, 0, null, 1);
+		SpinnerNumberModel spinnerModelAlapOsszeg = new SpinnerNumberModel(0, 0, 1000000, 1);
 		spAlapOsszeg = new JSpinner(spinnerModelAlapOsszeg);
 		spAlapOsszeg.setToolTipText("Alapösszeg");
 		spAlapOsszeg.setBounds(193, 11, 70, 20);
@@ -100,23 +101,16 @@ public class PreferencesDialog extends JDialog {
 						adatok.setNovRata(Integer.parseInt(spNovRata.getValue().toString()));
 						adatok.setArfolyam((String) jComboBox.getSelectedItem());
 						
-						boolean opened = false;
-						
+						dbc.open();
 						boolean fileExists = new File("resources/persely.db").exists();
 						if(!fileExists){
 							new File("resources").mkdirs();
-							
-							opened = dbc.open();
 							dbc.createTable();
 							dbc.addToDB(adatok);
 						}
-						if(!opened){
-							dbc.open();
-						}
-						
+
 						dbc.updateDB(adatok);
 						dbc.getDatabaseValues(adatok);
-						
 						dbc.close();
 						dispose();
 					}
