@@ -33,6 +33,8 @@ public class PerselyWindow extends JFrame {
 
 	private static final long serialVersionUID = 1L;
 	
+	JLabel mainLblHetenFizetendo = new JLabel();
+	
 	private JLabel lblBefizetve = new JLabel("Befizetve");
 	private JLabel lblFont = new JLabel();
 	private JLabel lblHetenFizetendo = new JLabel();
@@ -59,7 +61,6 @@ public class PerselyWindow extends JFrame {
 		PerselyAdatok adatok = new PerselyAdatok();
 		PerselyMain main = new PerselyMain();
 		JPanel contentPanel = new JPanel();
-		JTextArea log;
 		DbConnector dbc = new DbConnector();
 		boolean opened = false;
 		boolean fileExists = new File("resources/persely.db").exists();
@@ -68,7 +69,7 @@ public class PerselyWindow extends JFrame {
 		dbc.close();			
 		
 		main.setStatusz(adatok, PerselyWindow.this);
-		
+		setNovRataLabels(adatok, main);
 		URL urlToImage = this.getClass().getResource("/icon.png");
 		if (urlToImage != null) {
 			setIconImage(Toolkit.getDefaultToolkit().getImage(urlToImage));
@@ -79,19 +80,13 @@ public class PerselyWindow extends JFrame {
 		setTitle("Persely program");
 		setResizable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 289, 359);
+		setBounds(100, 100, 289, 279);
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
 		JMenu mnNewMenu = new JMenu("F\u00E1jl");
 		menuBar.add(mnNewMenu);
-
-		JMenuItem menuSave = new JMenuItem("Ment\u00E9s");
-		mnNewMenu.add(menuSave);
-
-		JMenuItem menuLoad = new JMenuItem("Bet\u00F6lt\u00E9s");
-		mnNewMenu.add(menuLoad);
 
 		JMenuItem menuPreferences = new JMenuItem("Beállítások");
 		menuPreferences.addActionListener(new ActionListener() {
@@ -122,22 +117,20 @@ public class PerselyWindow extends JFrame {
 
 		btnMehet.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-
+				dbc.open();
+				dbc.fizetesMentes(adatok);
+				try {
+					dbc.getDatabaseValues(adatok);
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				dbc.close();
+				refresh(adatok, main);
 			}
 		});
-		btnMehet.setBounds(10, 186, 263, 23);
+		btnMehet.setBounds(10, 186, 263, 32);
 		contentPanel.setLayout(null);
 		contentPanel.add(btnMehet);
-
-		log = new JTextArea();
-		log.setBounds(10, 233, 263, 63);
-		contentPanel.add(log);
-		log.setEnabled(false);
-		log.setText("Ha befizetted a hetet kattints a gombra! (log)");
-		log.setEditable(false);
-		log.setLineWrap(true);
-		log.setFont(new Font("Tahoma", Font.PLAIN, 11));
-		log.setDisabledTextColor(Color.BLACK);
 
 		JLabel lbStatus = new JLabel("Státusz:");
 		lbStatus.setBounds(58, 150, 72, 25);
@@ -158,12 +151,10 @@ public class PerselyWindow extends JFrame {
 		lblFont.setBounds(181, 11, 92, 14);
 		contentPanel.add(lblFont);
 
-		JLabel lblHtenFizetett = new JLabel("Héten fizetendő:");
-		lblHtenFizetett.setBounds(10, 36, 161, 14);
-		contentPanel.add(lblHtenFizetett);
+		mainLblHetenFizetendo.setBounds(10, 36, 161, 14);
+		contentPanel.add(mainLblHetenFizetendo);
 
 		setHetenFizetendo(adatok, main, lblHetenFizetendo);
-		lblHetenFizetendo.setForeground(Color.RED);
 		lblHetenFizetendo.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblHetenFizetendo.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblHetenFizetendo.setBounds(181, 36, 92, 14);
@@ -197,10 +188,6 @@ public class PerselyWindow extends JFrame {
 		separator_1.setBounds(10, 136, 263, 2);
 		contentPanel.add(separator_1);
 
-		JSeparator separator_2 = new JSeparator();
-		separator_2.setBounds(10, 220, 263, 2);
-		contentPanel.add(separator_2);
-
 		JLabel lblHt_1 = new JLabel(main.jelenlegiHet() + ". hét");
 		lblHt_1.setHorizontalAlignment(SwingConstants.RIGHT);
 		lblHt_1.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -219,6 +206,17 @@ public class PerselyWindow extends JFrame {
 		adatok.setNovRata(1);
 		adatok.setArfolyam("Font");
 		
+	}
+	
+	private void setNovRataLabels(PerselyAdatok adatok, PerselyMain main){
+		
+		if(main.jelenlegiHet() == main.fizetettHet(adatok)){
+			lblHetenFizetendo.setForeground(Color.GREEN);
+			mainLblHetenFizetendo.setText("Héten fizetett:");
+		} else {
+			lblHetenFizetendo.setForeground(Color.RED);
+			mainLblHetenFizetendo.setText("Héten fizetendő:");
+		}
 	}
 
 	private static void checkIfRunning() {
@@ -251,17 +249,17 @@ public class PerselyWindow extends JFrame {
 	
 	private void setHetenFizetendo(PerselyAdatok adatok, PerselyMain main, JLabel label){
 		if(!adatok.getArfolyam().equals("Forint")){
-			label.setText(main.arfolyam(adatok.getArfolyam()) + new Integer(main.hetenFizetendo(adatok, main.fizetettHet(adatok))).toString()); //FIXME NINCS KÉSZ! Van benne konstans!			
+			label.setText(main.arfolyam(adatok.getArfolyam()) + new Integer(main.hetenFizetendo(adatok, main.jelenlegiHet())).toString());
 		} else {
-			label.setText(new Integer(main.hetenFizetendo(adatok, 3)).toString() + " " + main.arfolyam(adatok.getArfolyam()));
+			label.setText(new Integer(main.hetenFizetendo(adatok, main.jelenlegiHet())).toString() + " " + main.arfolyam(adatok.getArfolyam()));
 		}
 	}
 	
 	private void setKovihet(PerselyAdatok adatok, PerselyMain main, JLabel label){
 		if(!adatok.getArfolyam().equals("Forint")){
-			label.setText(main.arfolyam(adatok.getArfolyam()) + new Integer(main.koviHet(adatok, main.fizetettHet(adatok))).toString()); //FIXME NINCS KÉSZ! Van benne konstans!			
+			label.setText(main.arfolyam(adatok.getArfolyam()) + new Integer(main.koviHet(adatok, main.jelenlegiHet())).toString());		
 		} else {
-			label.setText(new Integer(main.koviHet(adatok, 3)).toString() + " " + main.arfolyam(adatok.getArfolyam()));
+			label.setText(new Integer(main.koviHet(adatok, main.jelenlegiHet())).toString() + " " + main.arfolyam(adatok.getArfolyam()));
 		}
 	}
 	
@@ -294,7 +292,10 @@ public class PerselyWindow extends JFrame {
 		setHetenFizetendo(adatok, main, lblHetenFizetendo);
 		setKovihet(adatok, main, lblKoviHet);
 		setHatralevoOsszeg(adatok, main, lblHatralevoOsszeg);
+		setNovRataLabels(adatok, main);
 		main.setStatusz(adatok, PerselyWindow.this);
+		revalidate();
+		repaint();
 	}
 
 	public JLabel getLblBefizetve() {

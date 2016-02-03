@@ -146,4 +146,16 @@ public class DbConnector {
 			JOptionPane.showMessageDialog(null, "Database get data error: " + e.getMessage(), "Error", 0);
 		}
 	}
+	public void fizetesMentes(PerselyAdatok adatok){
+		try{
+			PerselyMain main = new PerselyMain();
+			String sql = "UPDATE Persely set `alap_osszeg` = " + main.fizetes(adatok);
+			statement.executeUpdate(sql);
+			sql = "UPDATE Persely set `current_date` = current_date";
+			statement.executeUpdate(sql);
+		} catch (SQLException e) {
+			System.err.println(e.getClass().getName() + ": " + e.getMessage());
+			JOptionPane.showMessageDialog(null, "Database fizetes error: " + e.getMessage(), "Error", 0);
+		}
+	}
 }

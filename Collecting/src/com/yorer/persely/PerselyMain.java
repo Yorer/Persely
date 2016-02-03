@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class PerselyMain {
 
-	public int ciklusosSzamolas(PerselyAdatok adatok) {
+	protected int vegsoOsszeg(PerselyAdatok adatok) {
 		int hetek = evVegeHet(adatok);
 		int hetenteNovekvoErtek;
 		int vegOsszeg = 0;
@@ -18,7 +18,7 @@ public class PerselyMain {
 		return vegOsszeg;
 	}
 
-	public int hetenFizetendo(PerselyAdatok adatok, int hanyadikHet){
+	protected int hetenFizetendo(PerselyAdatok adatok, int hanyadikHet){
 		int counter = 0;
 		for(int i = 0; i < hanyadikHet; i++){
 			counter += adatok.getNovRata();
@@ -26,15 +26,19 @@ public class PerselyMain {
 		return counter;
 	}
 	
-	public int koviHet(PerselyAdatok adatok, int hanyadikHet){
+	protected int koviHet(PerselyAdatok adatok, int hanyadikHet){
 		return hetenFizetendo(adatok, hanyadikHet) + adatok.getNovRata();
 	}
 	
-	public int hatraVan(PerselyAdatok adatok){
-		return ciklusosSzamolas(adatok) - (adatok.getAlapOsszeg()); 
+	protected int hatraVan(PerselyAdatok adatok){
+		return vegsoOsszeg(adatok) - (adatok.getAlapOsszeg()); 
 	}
 	
-	public String arfolyam(String tipus) {
+	protected int fizetes(PerselyAdatok adatok){
+		return adatok.getAlapOsszeg() + hetenFizetendo(adatok, jelenlegiHet());
+	}
+	
+	protected String arfolyam(String tipus) {
 		String getTipus;
 		switch (tipus) {
 		case "Font":
@@ -53,7 +57,7 @@ public class PerselyMain {
 		return getTipus;
 	}
 	
-	public void setStatusz(PerselyAdatok adatok, PerselyWindow window){
+	protected void setStatusz(PerselyAdatok adatok, PerselyWindow window){
 		if(jelenlegiHet() != fizetettHet(adatok)){
 			window.getLblBefizetve().setForeground(Color.RED);
 			window.getLblBefizetve().setText("Tartozás!");
