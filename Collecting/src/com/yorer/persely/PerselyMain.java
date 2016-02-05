@@ -15,11 +15,22 @@ public class PerselyMain {
 			hetenteNovekvoErtek = Math.multiplyExact(adatok.getNovRata(), hanyadikHet);
 			vegOsszeg += hetenteNovekvoErtek;
 		}
-		return vegOsszeg;
+		if(adatok.getAlapOsszeg() < eddigOsszegyujtott(adatok.getNovRata(), false, adatok)){
+			int kulonbozet = eddigOsszegyujtott(adatok.getNovRata(), true, adatok) - adatok.getAlapOsszeg();
+			vegOsszeg -= kulonbozet;
+			return vegOsszeg;
+		} else {
+			return vegOsszeg;				
+		}
 	}
 	
-	protected int eddigOsszegyujtott(int novRata){
-		int hetek = jelenlegiHet();
+	protected int eddigOsszegyujtott(int novRata, boolean fizetettHet, PerselyAdatok adatok){
+		int hetek;
+		if(fizetettHet){
+			hetek = fizetettHet(adatok);
+		} else {
+			hetek = jelenlegiHet();
+		}
 		int hetenteNovekvoErtek;
 		int vegOsszeg = 0;
 		

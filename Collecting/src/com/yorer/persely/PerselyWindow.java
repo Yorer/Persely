@@ -290,6 +290,7 @@ public class PerselyWindow extends JFrame {
 		setHatralevoOsszeg(adatok, main, lblHatralevoOsszeg);
 		setNovRataLabels(adatok, main);
 		main.setStatusz(adatok, PerselyWindow.this);
+		vege(main, adatok);
 	}
 	
 	private void setupStart(DbConnector dbc, PerselyAdatok adatok, PerselyMain main) throws ParseException{

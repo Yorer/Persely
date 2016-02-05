@@ -9,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.File;
 import java.text.ParseException;
 
 import javax.swing.JButton;
@@ -113,7 +114,7 @@ public class PreferencesDialog extends JDialog {
 						DbConnector dbc = new DbConnector();
 						if(PerselyWindow.elsoInditas){
 							PerselyMain main = new PerselyMain();
-							spAlapOsszeg.setValue(main.eddigOsszegyujtott((int)spNovRata.getValue()));
+							spAlapOsszeg.setValue(main.eddigOsszegyujtott((int)spNovRata.getValue(), false, adatok));
 							JOptionPane.showMessageDialog(null, "A növekedési ráta megadása után a program automatikusan beállította a perselyben lévõ értéket.\n" +
 							"A(z) " + main.jelenlegiHet() + ". héten a perselyben annyinak kell lennie, amit a program ír. Ha nem annyi van benne pótold!\n" +
 							"Természetesen ezt az értéket a késõbbiek folyamán lehet változtatni (bár nem ajánlott),\nígy kevesebb/több pénz gyûlik össze.", "Infó", 1);
@@ -136,6 +137,7 @@ public class PreferencesDialog extends JDialog {
 									"Alapértelmezetten fogja jelezni mennyit kellett a héten beletenni, és mennyi lesz a következõ.\n" +
 									"A következõ hétfõi napon lehet befizetni majd a következõ összeget.", "Figyelem!", 2);
 						}
+						PerselyWindow.notFirstlyOpened = new File("resources/persely.db").exists();
 						dispose();
 					}
 				});
