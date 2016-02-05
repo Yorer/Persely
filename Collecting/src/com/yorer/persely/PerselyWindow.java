@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
@@ -25,7 +26,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
-import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
@@ -34,6 +35,9 @@ public class PerselyWindow extends JFrame {
 	private static final long serialVersionUID = 1L;
 	
 	JLabel mainLblHetenFizetendo = new JLabel();
+	
+	protected static boolean notFirstlyOpened = new File("resources/persely.db").exists();
+	protected boolean elsoInditas = true;
 	
 	private JLabel lblBefizetve = new JLabel("Befizetve");
 	private JLabel lblFont = new JLabel();
@@ -49,6 +53,7 @@ public class PerselyWindow extends JFrame {
 					checkIfRunning();
 					PerselyWindow frame = new PerselyWindow();
 					frame.setVisible(true);
+					frame.elsoInditas = false;
 					
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -57,19 +62,15 @@ public class PerselyWindow extends JFrame {
 		});
 	}
 
-	public PerselyWindow() throws ParseException {
+	protected PerselyWindow() throws ParseException {
 		PerselyAdatok adatok = new PerselyAdatok();
 		PerselyMain main = new PerselyMain();
-		JPanel contentPanel = new JPanel();
 		DbConnector dbc = new DbConnector();
-		boolean opened = false;
-		boolean fileExists = new File("resources/persely.db").exists();
-		createTableIfNotExists(fileExists, opened, dbc, adatok, true);;
-		dbc.getDatabaseValues(adatok);
-		dbc.close();			
 		
-		main.setStatusz(adatok, PerselyWindow.this);
-		setNovRataLabels(adatok, main);
+		JPanel contentPanel = new JPanel();
+		
+		setupStart(dbc, adatok, main);
+		
 		URL urlToImage = this.getClass().getResource("/icon.png");
 		if (urlToImage != null) {
 			setIconImage(Toolkit.getDefaultToolkit().getImage(urlToImage));
@@ -85,10 +86,11 @@ public class PerselyWindow extends JFrame {
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
 
-		JMenu mnNewMenu = new JMenu("F\u00E1jl");
+		JMenu mnNewMenu = new JMenu("Fájl");
 		menuBar.add(mnNewMenu);
 
-		JMenuItem menuPreferences = new JMenuItem("Beállítások");
+		JMenuItem menuPreferences = new JMenuItem("Beállítások", KeyEvent.VK_T);
+		menuPreferences.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_1, ActionEvent.ALT_MASK));
 		menuPreferences.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				try {
@@ -102,7 +104,8 @@ public class PerselyWindow extends JFrame {
 		});
 		mnNewMenu.add(menuPreferences);
 
-		JMenuItem mntmKilps = new JMenuItem("Kilépés");
+		JMenuItem mntmKilps = new JMenuItem("Kilépés", KeyEvent.VK_T);
+		mntmKilps.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_2, ActionEvent.ALT_MASK));
 		mntmKilps.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.exit(0);
@@ -120,7 +123,7 @@ public class PerselyWindow extends JFrame {
 				dbc.open();
 				dbc.fizetesMentes(adatok);
 				try {
-					dbc.getDatabaseValues(adatok);
+					dbc.adatbazisErtekek(adatok);
 				} catch (ParseException e) {
 					e.printStackTrace();
 				}
@@ -200,13 +203,6 @@ public class PerselyWindow extends JFrame {
 		final int y = (screenSize.height - getHeight()) / 2;
 		setLocation(x, y);
 	}
-
-	private void defaultValueSet(PerselyAdatok adatok) {
-		adatok.setAlapOsszeg(0);
-		adatok.setNovRata(1);
-		adatok.setArfolyam("Font");
-		
-	}
 	
 	private void setNovRataLabels(PerselyAdatok adatok, PerselyMain main){
 		
@@ -271,14 +267,14 @@ public class PerselyWindow extends JFrame {
 		}
 	}
 	
-	protected void createTableIfNotExists(boolean fileExists, boolean opened, DbConnector dbc, PerselyAdatok adatok, boolean firstOpen){
-		if(!fileExists){
+	protected void createTableIfNotExists(boolean opened, DbConnector dbc, PerselyAdatok adatok, boolean firstOpen){
+		if(!notFirstlyOpened){
 			new File("resources").mkdirs();
 			
 			opened = dbc.open();
 			dbc.createTable();
 			if(firstOpen){
-				defaultValueSet(adatok);				
+//				defaultValueSet(adatok);				
 			}
 			dbc.addToDB(adatok);
 		}
@@ -294,31 +290,62 @@ public class PerselyWindow extends JFrame {
 		setHatralevoOsszeg(adatok, main, lblHatralevoOsszeg);
 		setNovRataLabels(adatok, main);
 		main.setStatusz(adatok, PerselyWindow.this);
-		revalidate();
-		repaint();
+	}
+	
+	private void setupStart(DbConnector dbc, PerselyAdatok adatok, PerselyMain main) throws ParseException{
+		boolean opened = false;
+		if(!notFirstlyOpened){
+			elsoInditas = true;
+			openElsoInditasBeallitasok(adatok, PerselyWindow.this);
+		} else {
+			elsoInditas = false;
+		}
+		createTableIfNotExists(opened, dbc, adatok, true);
+		dbc.adatbazisErtekek(adatok);
+		dbc.close();			
+		
+		main.setStatusz(adatok, PerselyWindow.this);
+		setNovRataLabels(adatok, main);
+		vege(main, adatok);
+	}
+	
+	protected void openElsoInditasBeallitasok(PerselyAdatok adatok, PerselyWindow window){
+		JOptionPane.showMessageDialog(null, "Most indítottad először a programot. Hogy létrehozhassam az adatbázist, be kell állítanod.", "Üdvözöllek", 1);
+		new PreferencesDialog(adatok, window);
+	}
+	
+	private void vege(PerselyMain main, PerselyAdatok adatok){
+		if(main.hatraVan(adatok) <= 0){
+			if(!adatok.getArfolyam().equals("Forint")){
+				JOptionPane.showMessageDialog(null, "Sikeresen végigcsináltad a kihívást.\nGRATULÁLOK!\nÖsszesen gyűjtöttél: " + main.arfolyam(adatok.getArfolyam()) + adatok.getAlapOsszeg() + "-(o)t", "Infó", 1);
+			} else {
+				JOptionPane.showMessageDialog(null, "Sikeresen végigcsináltad a kihívást.\nGRATULÁLOK!\nÖsszesen gyűjtöttél: " + adatok.getAlapOsszeg() + " " + main.arfolyam(adatok.getArfolyam()) + "-(o)t", "Infó", 1);
+			}
+			System.exit(0);
+		}
 	}
 
-	public JLabel getLblBefizetve() {
+	protected JLabel getLblBefizetve() {
 		return lblBefizetve;
 	}
 
-	public JLabel getLblFont() {
+	protected JLabel getLblFont() {
 		return lblFont;
 	}
 
-	public JLabel getLblHetenFizetendo() {
+	protected JLabel getLblHetenFizetendo() {
 		return lblHetenFizetendo;
 	}
 
-	public JLabel getLblKoviHet() {
+	protected JLabel getLblKoviHet() {
 		return lblKoviHet;
 	}
 
-	public JLabel getLblHatralevoOsszeg() {
+	protected JLabel getLblHatralevoOsszeg() {
 		return lblHatralevoOsszeg;
 	}
 	
-	public JButton getBtnMehet() {
+	protected JButton getBtnMehet() {
 		return btnMehet;
 	}
 }

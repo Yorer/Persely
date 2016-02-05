@@ -11,8 +11,20 @@ public class PerselyMain {
 		int hetenteNovekvoErtek;
 		int vegOsszeg = 0;
 		
-		for (int hanyadikHet = 1; hanyadikHet <= hetek; hanyadikHet++) {
+		for (int hanyadikHet = evKezdeteHet(adatok); hanyadikHet <= hetek; hanyadikHet++) {
 			hetenteNovekvoErtek = Math.multiplyExact(adatok.getNovRata(), hanyadikHet);
+			vegOsszeg += hetenteNovekvoErtek;
+		}
+		return vegOsszeg;
+	}
+	
+	protected int eddigOsszegyujtott(int novRata){
+		int hetek = jelenlegiHet();
+		int hetenteNovekvoErtek;
+		int vegOsszeg = 0;
+		
+		for (int hanyadikHet = 1; hanyadikHet <= hetek; hanyadikHet++) {
+			hetenteNovekvoErtek = Math.multiplyExact(novRata, hanyadikHet);
 			vegOsszeg += hetenteNovekvoErtek;
 		}
 		return vegOsszeg;

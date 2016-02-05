@@ -9,14 +9,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.io.File;
 import java.text.ParseException;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JSpinner;
@@ -28,8 +27,10 @@ import javax.swing.border.EmptyBorder;
 public class PreferencesDialog extends JDialog {
 	
 	private static final long serialVersionUID = 1L;
+	
+	private JButton cancelButton = new JButton("Cancel");
 
-	public PreferencesDialog(PerselyAdatok adatok, PerselyWindow frame) {
+	protected PreferencesDialog(PerselyAdatok adatok, PerselyWindow window) {
 		JSpinner spNovRata;
 		JSpinner spAlapOsszeg;
 		JComboBox<String> jComboBox;
@@ -58,7 +59,11 @@ public class PreferencesDialog extends JDialog {
 		spNovRata = new JSpinner(spinnerModelNovRata);
 		spNovRata.setToolTipText("Növekedési ráta");
 		spNovRata.setBounds(193, 36, 70, 20);
-		spNovRata.setValue(adatok.getNovRata());
+		if(window.elsoInditas){
+			spNovRata.setValue(1);
+		} else {
+			spNovRata.setValue(adatok.getNovRata());			
+		}
 		JTextField tf3 = ((JSpinner.DefaultEditor) spNovRata.getEditor()).getTextField();
 		tf3.addFocusListener(focus());
 		contentPanel.add(spNovRata);
@@ -67,7 +72,11 @@ public class PreferencesDialog extends JDialog {
 		spAlapOsszeg = new JSpinner(spinnerModelAlapOsszeg);
 		spAlapOsszeg.setToolTipText("Alapösszeg");
 		spAlapOsszeg.setBounds(193, 11, 70, 20);
-		spAlapOsszeg.setValue(adatok.getAlapOsszeg());
+		if(window.elsoInditas){
+			spAlapOsszeg.setEnabled(false);
+		} else {
+			spAlapOsszeg.setValue(adatok.getAlapOsszeg());			
+		}
 		JTextField tf4 = ((JSpinner.DefaultEditor) spAlapOsszeg.getEditor()).getTextField();
 		tf4.addFocusListener(focus());
 		contentPanel.add(spAlapOsszeg);
@@ -78,7 +87,7 @@ public class PreferencesDialog extends JDialog {
 		
 		Values v = new Values();
 		String[] items = {v.getFONT(), v.getEURO(), v.getFORINT()};
-		jComboBox = new JComboBox(items);
+		jComboBox = new JComboBox<>(items);
 		jComboBox.setBounds(193, 64, 70, 20);
 		if(adatok.getArfolyam() != null && !adatok.getArfolyam().isEmpty()){
 			jComboBox.setSelectedItem(adatok.getArfolyam());			
@@ -97,30 +106,40 @@ public class PreferencesDialog extends JDialog {
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent event) {
 						DbConnector dbc = new DbConnector();
-						
-						adatok.setAlapOsszeg(Integer.parseInt(spAlapOsszeg.getValue().toString()));
-						adatok.setNovRata(Integer.parseInt(spNovRata.getValue().toString()));
+						if(window.elsoInditas){
+							PerselyMain main = new PerselyMain();
+							spAlapOsszeg.setValue(main.eddigOsszegyujtott((int)spNovRata.getValue()));
+							JOptionPane.showMessageDialog(null, "A növekedési ráta megadása után a program automatikusan beállította a perselyben lévõ értéket.\n" +
+							"A(z) " + main.jelenlegiHet() + ". héten a perselyben annyinak kell lennie, amit a program ír. Ha nem annyi van benne pótold!\n" +
+							"Természetesen ezt az értéket a késõbbiek folyamán lehet változtatni (bár nem ajánlott),\nígy kevesebb/több pénz gyûlik össze.", "Infó", 1);
+						}
+						adatok.setAlapOsszeg((int)spAlapOsszeg.getValue());
+						adatok.setNovRata((int)spNovRata.getValue());							
 						adatok.setArfolyam((String) jComboBox.getSelectedItem());
 						
 						boolean opened = false;
-						boolean fileExists = new File("resources/persely.db").exists();
-						frame.createTableIfNotExists(fileExists, opened, dbc, adatok, false);
+						window.createTableIfNotExists(opened, dbc, adatok, false);
 						dbc.updateDB(adatok);
 						try {
-							dbc.getDatabaseValues(adatok);
+							dbc.adatbazisErtekek(adatok);
 						} catch (ParseException e) {
 							e.printStackTrace();
 						}
 						dbc.close();
+						if(window.elsoInditas){
+							JOptionPane.showMessageDialog(null, "Mivel már a(z) " + new PerselyMain().jelenlegiHet() + ". héten vagyunk, így a fizetendõ összeg is a héthez igazodik.\n" + 
+									"Alapértelmezetten fogja jelezni mennyit kellett a héten beletenni, és mennyi lesz a következõ.\n" +
+									"A következõ hétfõi napon lehet befizetni majd a következõ összeget.", "Figyelem!", 2);
+						}
 						dispose();
 					}
 				});
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
-			}
-			{
-				JButton cancelButton = new JButton("Cancel");
+				if(window.elsoInditas){
+					cancelButton.setEnabled(false);
+				}
 				cancelButton.setActionCommand("Cancel");
 				cancelButton.addActionListener(new ActionListener() {
 					
@@ -132,7 +151,11 @@ public class PreferencesDialog extends JDialog {
 				buttonPane.add(cancelButton);
 			}
 		}
-		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		if(window.elsoInditas){
+			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+		} else {
+			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		}
 		setModal(true);
 		
 		final Toolkit toolkit = Toolkit.getDefaultToolkit();
@@ -143,7 +166,11 @@ public class PreferencesDialog extends JDialog {
 		setVisible(true);
 	}
 	
-	public FocusListener focus(){
+	protected JButton getCancelButton() {
+		return cancelButton;
+	}
+
+	protected FocusListener focus(){
 		FocusListener fcsListener = new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent e) {

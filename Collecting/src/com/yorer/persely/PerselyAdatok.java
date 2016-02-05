@@ -12,46 +12,46 @@ public class PerselyAdatok {
 	private Date evKezdete;
 	private Date evVege;
 	
-	public int getId() {
+	protected int getId() {
 		return id;
 	}
-	public void setId(int id) {
+	protected void setId(int id) {
 		this.id = id;
 	}
-	public int getAlapOsszeg() {
+	protected int getAlapOsszeg() {
 		return alapOsszeg;
 	}
-	public void setAlapOsszeg(int alapOsszeg) {
+	protected void setAlapOsszeg(int alapOsszeg) {
 		this.alapOsszeg = alapOsszeg;
 	}
-	public int getNovRata() {
+	protected int getNovRata() {
 		return novRata;
 	}
-	public void setNovRata(int novRata) {
+	protected void setNovRata(int novRata) {
 		this.novRata = novRata;
 	}
-	public String getArfolyam() {
+	protected String getArfolyam() {
 		return arfolyam;
 	}
-	public void setArfolyam(String arfolyam) {
+	protected void setArfolyam(String arfolyam) {
 		this.arfolyam = arfolyam;
 	}
-	public Date getJelenlegiDatum() {
+	protected Date getJelenlegiDatum() {
 		return jelenlegiDatum;
 	}
-	public void setJelenlegiDatum(Date jelenlegiDatum) {
+	protected void setJelenlegiDatum(Date jelenlegiDatum) {
 		this.jelenlegiDatum = jelenlegiDatum;
 	}
-	public Date getEvKezdete() {
+	protected Date getEvKezdete() {
 		return evKezdete;
 	}
-	public void setEvKezdete(Date evKezdete) {
+	protected void setEvKezdete(Date evKezdete) {
 		this.evKezdete = evKezdete;
 	}
-	public Date getEvVege() {
+	protected Date getEvVege() {
 		return evVege;
 	}
-	public void setEvVege(Date evVege) {
+	protected void setEvVege(Date evVege) {
 		this.evVege = evVege;
 	}
 }
