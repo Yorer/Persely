@@ -116,7 +116,9 @@ public class DbConnector {
 			while (rs.next()) {
 				adatok.setAlapOsszeg(rs.getInt("alap_osszeg"));
 				adatok.setNovRata(rs.getInt("nov_rata"));
-				adatok.setArfolyam(rs.getString("arfolyam"));
+				if(!PerselyWindow.elsoInditas){
+					adatok.setArfolyam(rs.getString("arfolyam"));					
+				}
 				adatok.setJelenlegiDatum(df.parse(rs.getString("current_date")));
 				adatok.setEvKezdete(df.parse(rs.getString("start_date")));
 				adatok.setEvVege(df.parse(rs.getString("end_date")));

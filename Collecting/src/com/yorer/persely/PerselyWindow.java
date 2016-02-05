@@ -37,7 +37,7 @@ public class PerselyWindow extends JFrame {
 	JLabel mainLblHetenFizetendo = new JLabel();
 	
 	protected static boolean notFirstlyOpened = new File("resources/persely.db").exists();
-	protected boolean elsoInditas = true;
+	protected static boolean elsoInditas = true;
 	
 	private JLabel lblBefizetve = new JLabel("Befizetve");
 	private JLabel lblFont = new JLabel();
@@ -53,7 +53,7 @@ public class PerselyWindow extends JFrame {
 					checkIfRunning();
 					PerselyWindow frame = new PerselyWindow();
 					frame.setVisible(true);
-					frame.elsoInditas = false;
+					elsoInditas = false;
 					
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -310,7 +310,7 @@ public class PerselyWindow extends JFrame {
 	}
 	
 	protected void openElsoInditasBeallitasok(PerselyAdatok adatok, PerselyWindow window){
-		JOptionPane.showMessageDialog(null, "Most indítottad először a programot. Hogy létrehozhassam az adatbázist, be kell állítanod.", "Üdvözöllek", 1);
+		JOptionPane.showMessageDialog(null, "Most indítottad először a programot.\nHogy létrehozhassam az adatbázist, be kell állítanod.", "Üdvözöllek", 1);
 		new PreferencesDialog(adatok, window);
 	}
 	

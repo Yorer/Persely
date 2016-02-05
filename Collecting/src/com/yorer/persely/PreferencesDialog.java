@@ -59,7 +59,7 @@ public class PreferencesDialog extends JDialog {
 		spNovRata = new JSpinner(spinnerModelNovRata);
 		spNovRata.setToolTipText("Növekedési ráta");
 		spNovRata.setBounds(193, 36, 70, 20);
-		if(window.elsoInditas){
+		if(PerselyWindow.elsoInditas){
 			spNovRata.setValue(1);
 		} else {
 			spNovRata.setValue(adatok.getNovRata());			
@@ -72,7 +72,7 @@ public class PreferencesDialog extends JDialog {
 		spAlapOsszeg = new JSpinner(spinnerModelAlapOsszeg);
 		spAlapOsszeg.setToolTipText("Alapösszeg");
 		spAlapOsszeg.setBounds(193, 11, 70, 20);
-		if(window.elsoInditas){
+		if(PerselyWindow.elsoInditas){
 			spAlapOsszeg.setEnabled(false);
 		} else {
 			spAlapOsszeg.setValue(adatok.getAlapOsszeg());			
@@ -105,17 +105,22 @@ public class PreferencesDialog extends JDialog {
 				JButton okButton = new JButton("OK");
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent event) {
+						okButton.setEnabled(false);
+						jComboBox.setEditable(false);
+						spNovRata.setEnabled(false);
+						spAlapOsszeg.setEnabled(false);
+						
 						DbConnector dbc = new DbConnector();
-						if(window.elsoInditas){
+						if(PerselyWindow.elsoInditas){
 							PerselyMain main = new PerselyMain();
 							spAlapOsszeg.setValue(main.eddigOsszegyujtott((int)spNovRata.getValue()));
 							JOptionPane.showMessageDialog(null, "A növekedési ráta megadása után a program automatikusan beállította a perselyben lévõ értéket.\n" +
 							"A(z) " + main.jelenlegiHet() + ". héten a perselyben annyinak kell lennie, amit a program ír. Ha nem annyi van benne pótold!\n" +
 							"Természetesen ezt az értéket a késõbbiek folyamán lehet változtatni (bár nem ajánlott),\nígy kevesebb/több pénz gyûlik össze.", "Infó", 1);
 						}
+						adatok.setArfolyam((String) jComboBox.getSelectedItem());
 						adatok.setAlapOsszeg((int)spAlapOsszeg.getValue());
 						adatok.setNovRata((int)spNovRata.getValue());							
-						adatok.setArfolyam((String) jComboBox.getSelectedItem());
 						
 						boolean opened = false;
 						window.createTableIfNotExists(opened, dbc, adatok, false);
@@ -126,7 +131,7 @@ public class PreferencesDialog extends JDialog {
 							e.printStackTrace();
 						}
 						dbc.close();
-						if(window.elsoInditas){
+						if(PerselyWindow.elsoInditas){
 							JOptionPane.showMessageDialog(null, "Mivel már a(z) " + new PerselyMain().jelenlegiHet() + ". héten vagyunk, így a fizetendõ összeg is a héthez igazodik.\n" + 
 									"Alapértelmezetten fogja jelezni mennyit kellett a héten beletenni, és mennyi lesz a következõ.\n" +
 									"A következõ hétfõi napon lehet befizetni majd a következõ összeget.", "Figyelem!", 2);
@@ -137,7 +142,7 @@ public class PreferencesDialog extends JDialog {
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
-				if(window.elsoInditas){
+				if(PerselyWindow.elsoInditas){
 					cancelButton.setEnabled(false);
 				}
 				cancelButton.setActionCommand("Cancel");
@@ -151,7 +156,7 @@ public class PreferencesDialog extends JDialog {
 				buttonPane.add(cancelButton);
 			}
 		}
-		if(window.elsoInditas){
+		if(PerselyWindow.elsoInditas){
 			setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 		} else {
 			setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
