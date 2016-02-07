@@ -38,9 +38,7 @@ public class PreferencesDialog extends JDialog {
 		
 		setTitle("Beállítások");
 		setResizable(false);
-		setLocationRelativeTo(null);
 		final JPanel contentPanel = new JPanel();
-		
 		
 		setBounds(100, 100, 275, 164);
 		getContentPane().setLayout(new BorderLayout());
@@ -48,9 +46,9 @@ public class PreferencesDialog extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		contentPanel.setLayout(null);
 		
-		JLabel label = new JLabel("Alapösszeg (perselyben levõ)");
-		label.setBounds(6, 14, 177, 14);
-		contentPanel.add(label);
+		JLabel lblPerselyembenVan = new JLabel("Perselyemben van");
+		lblPerselyembenVan.setBounds(6, 14, 177, 14);
+		contentPanel.add(lblPerselyembenVan);
 		
 		JLabel label_1 = new JLabel("Növekedési ráta");
 		label_1.setBounds(6, 39, 177, 14);

@@ -87,8 +87,11 @@ public class DbConnector {
 	
 	protected boolean open() {
 		try {
+			StatusBar statusBar = new StatusBar();
+			statusBar.start();
 			connection = getConnection();
 			statement = connection.createStatement();
+			statusBar.done();
 			System.out.println("Database connection successfully opened.");
 		} catch (SQLException e) {
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());

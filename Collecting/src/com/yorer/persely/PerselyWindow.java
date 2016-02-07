@@ -29,6 +29,7 @@ import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
+import java.awt.SystemColor;
 
 public class PerselyWindow extends JFrame {
 
@@ -68,6 +69,7 @@ public class PerselyWindow extends JFrame {
 		DbConnector dbc = new DbConnector();
 		
 		JPanel contentPanel = new JPanel();
+		contentPanel.setBackground(SystemColor.inactiveCaptionBorder);
 		
 		setupStart(dbc, adatok, main);
 		
@@ -115,6 +117,25 @@ public class PerselyWindow extends JFrame {
 		JSeparator separator = new JSeparator();
 		mnNewMenu.add(separator);
 		mnNewMenu.add(mntmKilps);
+		
+		JMenu mnSg = new JMenu("Súgó");
+		menuBar.add(mnSg);
+		
+		JMenuItem mntmSegtsg = new JMenuItem("Segítség");
+		mntmSegtsg.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				new Sugo();
+			}
+		});
+		mnSg.add(mntmSegtsg);
+		
+		JMenuItem mntmNvjegy = new JMenuItem("Névjegy");
+		mntmNvjegy.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent event) {
+				new Nevjegy();
+			}
+		});
+		mnSg.add(mntmNvjegy);
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPanel);
 
